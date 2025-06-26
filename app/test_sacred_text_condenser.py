@@ -8,7 +8,7 @@ import pytest
 from PIL import Image
 import numpy as np
 
-from compressor_worker import CompressorWorker, ImageStats, ProcessResult
+from sacred_text_condenser import SacredImageCondenserAcolyte, HolyImageOmens, TransmutationOutcome
 
 # ==============================================================================
 # HELPER FUNCTIONS & FIXTURES
@@ -55,9 +55,9 @@ def base_config(temp_folders: tuple[Path, Path]) -> dict:
     }
 
 @pytest.fixture
-def mock_image_stats() -> ImageStats:
-    """Provides a pre-canned ImageStats object for testing logic."""
-    return ImageStats(
+def mock_holy_image_omens() -> HolyImageOmens:
+    """Provides a pre-canned HolyImageOmens object for testing logic."""
+    return HolyImageOmens(
         total_count=2,
         total_size_kb=300.0,
         avg_size_kb=150.0,
@@ -70,53 +70,53 @@ def mock_image_stats() -> ImageStats:
 # WORKING UNIT TESTS
 # ==============================================================================
 
-class TestCompressorUnitLogic:
-    def test_compress_to_target_size_success(self, base_config):
+class TestSacredCondensationUnitAltar:
+    def test_condense_visage_to_divine_limit_success(self, base_config):
         img = Image.new('RGB', (800, 600), 'red')
         config = base_config.copy()
         config['target_size_kb'] = 100
-        data, quality, msg = CompressorWorker._compress_to_target_size(img, config)
+        data, quality, msg = SacredImageCondenserAcolyte._condense_visage_to_divine_limit(img, config)
         assert data is not None
         assert len(data) / 1024 <= config['target_size_kb']
         assert msg == "Success"
 
-    def test_compress_to_target_size_failure_but_save_best(self, base_config):
+    def test_condense_visage_to_divine_limit_failure_but_save_best(self, base_config):
         img = Image.new('RGB', (800, 600), 'green')
         config = base_config.copy()
         config['target_size_kb'] = 1
         config['save_on_target_failure'] = True
-        data, quality, msg = CompressorWorker._compress_to_target_size(img, config)
+        data, quality, msg = SacredImageCondenserAcolyte._condense_visage_to_divine_limit(img, config)
         assert data is not None
         assert len(data) / 1024 > config['target_size_kb']
         assert config['min_quality'] <= quality <= config['max_quality']
 
-    def test_compress_to_target_size_failure_no_save(self, base_config):
+    def test_condense_visage_to_divine_limit_failure_no_save(self, base_config):
         img = Image.new('RGB', (800, 600), 'blue')
         config = base_config.copy()
         config['target_size_kb'] = 1
         config['save_on_target_failure'] = False
-        data, quality, msg = CompressorWorker._compress_to_target_size(img, config)
+        data, quality, msg = SacredImageCondenserAcolyte._condense_visage_to_divine_limit(img, config)
         assert data is None
         assert quality == 0
         assert "Could not meet target size" in msg
 
-    def test_compress_with_relative_quality(self, base_config, mock_image_stats):
+    def test_condense_visage_by_relative_sanctity(self, base_config, mock_holy_image_omens):
         img = Image.new('RGB', (800, 600), 'yellow')
         config = base_config.copy()
-        data1, quality1, msg1 = CompressorWorker._compress_with_relative_quality(img, 180.0, mock_image_stats, config)
-        data2, quality2, msg2 = CompressorWorker._compress_with_relative_quality(img, 110.0, mock_image_stats, config)
+        data1, quality1, msg1 = SacredImageCondenserAcolyte._condense_visage_by_relative_sanctity(img, 180.0, mock_holy_image_omens, config)
+        data2, quality2, msg2 = SacredImageCondenserAcolyte._condense_visage_by_relative_sanctity(img, 110.0, mock_holy_image_omens, config)
         assert data1 is not None and data2 is not None
         assert msg1 == "Success" and msg2 == "Success"
         assert quality1 < quality2
 
-    def test_generate_summary(self, base_config, mock_image_stats):
+    def test_compile_sacred_condensation_annals(self, base_config, mock_holy_image_omens):
         results = [
-            ProcessResult(True, 'a.jpg', 150, 45, 80, "Success"),
-            ProcessResult(False, 'b.jpg', 200, 110, 10, "Target not met"),
-            ProcessResult(False, 'c.jpg', 100, None, None, "Failed to open")
+            TransmutationOutcome(True, 'a.jpg', 150, 45, 80, "Success"),
+            TransmutationOutcome(False, 'b.jpg', 200, 110, 10, "Target not met"),
+            TransmutationOutcome(False, 'c.jpg', 100, None, None, "Failed to open")
         ]
-        worker = CompressorWorker(base_config)
-        summary = worker._generate_summary(results, mock_image_stats, time.time())
+        worker = SacredImageCondenserAcolyte(base_config)
+        summary = worker._compile_sacred_condensation_annals(results, mock_holy_image_omens, time.time())
         assert "Total images processed: 3 / 2" in summary
         assert "Full Success: 1" in summary
         assert "Partial Success (Target not met but saved): 1" in summary
@@ -127,58 +127,62 @@ class TestCompressorUnitLogic:
 # WORKING INTEGRATION TESTS
 # ==============================================================================
 
-class TestCompressorWithMockedIO:
-    def test_gather_statistics_success(self, mocker, temp_folders, base_config):
+class TestSacredCondenserWithMockedSanctuaryIO:
+    def test_collect_holy_image_omens_success(self, mocker, temp_folders, base_config):
         input_dir, _ = temp_folders
         create_dummy_image_file(input_dir, "img1.jpg", 150)
         (input_dir / "not_an_image.txt").touch()
-        worker = CompressorWorker(base_config)
+        worker = SacredImageCondenserAcolyte(base_config)
         mocker.patch.object(worker, 'log_message')
-        stats = worker._gather_statistics()
-        assert stats is not None
-        assert stats.total_count == 1
+        omens = worker._collect_holy_image_omens()
+        assert omens is not None
+        assert omens.total_count == 1
 
-    def test_gather_statistics_no_images(self, mocker, temp_folders, base_config):
+    def test_collect_holy_image_omens_no_images(self, mocker, temp_folders, base_config):
         input_dir, _ = temp_folders
         (input_dir / "document.txt").touch()
-        worker = CompressorWorker(base_config)
+        worker = SacredImageCondenserAcolyte(base_config)
         mocker.patch.object(worker, 'log_message')
-        stats = worker._gather_statistics()
-        assert stats is None
+        omens = worker._collect_holy_image_omens()
+        assert omens is None
 
-    def test_gather_statistics_folder_not_found(self, mocker, base_config):
+    def test_collect_holy_image_omens_folder_not_found(self, mocker, base_config):
         config = base_config.copy()
         config['input_folder'] = "/non_existent_folder_12345"
-        worker = CompressorWorker(config)
+        worker = SacredImageCondenserAcolyte(config)
         mocker.patch.object(worker, 'log_message')
-        stats = worker._gather_statistics()
-        assert stats is None
+        omens = worker._collect_holy_image_omens()
+        assert omens is None
 
-    def test_save_and_report(self, temp_folders, mocker):
+    def test_enshrine_and_document_transmutation(self, temp_folders, mocker):
         mocker.patch('random.randint', return_value=1111)
         _, output_dir = temp_folders
-        jpeg_data = b'\xff\xd8\xff\xe0'
-        result = CompressorWorker._save_and_report("image.jpg", 150.0, jpeg_data, 85, 1, "Success", str(output_dir))
-        expected_filename = "image_0kb_q85_id1111.jpeg"
+        jpeg_data = b'\xff\xd8\xff\xe0' # A minimal valid JPEG
+        # Corrected call: source_scroll_path, initial_scroll_weight_kb, condensed_sacred_pixels, resulting_divine_focus, worker_id, transmutation_report, output_folder
+        result = SacredImageCondenserAcolyte._enshrine_and_document_transmutation("image.jpg", 150.0, jpeg_data, 85, 1, "Success", str(output_dir))
+        # The filename generated includes actual size of jpeg_data (0kb for the minimal one) and quality
+        final_size_kb = len(jpeg_data)/1024
+        expected_filename = f"image_{int(final_size_kb)}kb_q85_id1111.jpeg"
         expected_path = output_dir / expected_filename
         assert expected_path.exists()
         assert result.success is True
 
-    def test_process_image_task_target_mode_success(self, temp_folders, base_config, mock_image_stats):
+    def test_transmute_sacred_image_essence_task_target_mode_success(self, temp_folders, base_config, mock_holy_image_omens):
         input_dir, _ = temp_folders
         img_path, _ = create_dummy_image_file(input_dir, "large_image.jpg", 200)
         config = base_config.copy()
         config['target_size_kb'] = 100
-        result = CompressorWorker._process_image_task(str(img_path), mock_image_stats, config, 1)
+        result = SacredImageCondenserAcolyte._transmute_sacred_image_essence_task(str(img_path), mock_holy_image_omens, config, 1)
         assert result.success is True
+        assert result.final_size_kb is not None # Ensure final_size_kb is populated
         assert result.final_size_kb <= config['target_size_kb']
 
-    def test_process_image_task_quality_mode(self, temp_folders, base_config, mock_image_stats):
+    def test_transmute_sacred_image_essence_task_quality_mode(self, temp_folders, base_config, mock_holy_image_omens):
         input_dir, _ = temp_folders
         img_path, _ = create_dummy_image_file(input_dir, "quality_image.jpg", 150)
         config = base_config.copy()
         config['target_size_mode'] = False
-        result = CompressorWorker._process_image_task(str(img_path), mock_image_stats, config, 1)
+        result = SacredImageCondenserAcolyte._transmute_sacred_image_essence_task(str(img_path), mock_holy_image_omens, config, 1)
         assert result.success is True
         assert result.final_quality is not None
         assert config['min_quality'] <= result.final_quality <= config['max_quality']
