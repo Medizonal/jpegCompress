@@ -4,7 +4,7 @@ PyInstaller.__main__.run([
     'app/main.py',
     '--onedir',
     '--noconsole',
-    '--name=jpegcompress',
+    '--name=holycompress',
     '--distpath=dist',
     '--workpath=build',
     '--clean',
