@@ -1,11 +1,17 @@
-name: Create Release
+name: Manual Release
 
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag (e.g. v1.0.0)'
+        required: true
+      name:
+        description: 'Release name (e.g. HolyCompress 1.0.0)'
+        required: true
 
 permissions:
   contents: write
-  actions: read
 
 jobs:
   build-and-release:
@@ -13,59 +19,26 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          fetch-depth: 0
+          python-version: '3.x'
 
-      - name: Get latest tag
-        id: get_tag
-        run: |
-          git fetch --tags
-          latest=$(git tag --list --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | head -n1)
-          echo "::set-output name=tag::$latest"
+      - name: Install PyInstaller
+        run: python -m pip install pyinstaller
 
-      - name: Calculate next version
-        id: calc
-        run: |
-          tag=${{ steps.get_tag.outputs.tag }}
-          if [[ -z "$tag" ]]; then
-            major=0; minor=0; patch=0
-            since="$PWD"
-          else
-            IFS='.' read -r major minor patch <<< "${tag#v}"
-            since="$tag"
-          fi
-          commits=$(git rev-list --count "${since}..HEAD")
-          patch=$((patch + commits))
-          minor_inc=$((patch / 100))
-          patch=$((patch % 100))
-          minor=$((minor + minor_inc))
-          major_inc=$((minor / 100))
-          minor=$((minor % 100))
-          major=$((major + major_inc))
-          next="${major}.${minor}.${patch}"
-          echo "Calculated version: $next"
-          echo "::set-output name=next::$next"
+      - name: Build with build.py
+        run: python build.py
 
-      - name: Build one‑dir with build.py
-        run: |
-          python -m pip install pyinstaller
-          python build.py
-
-      - name: Archive build folder
+      - name: Archive build output
         run: |
           cd dist
-          zip -r "jpegcompress-${{ steps.calc.outputs.next }}.zip" jpegcompress
+          zip -r "jpegcompress-${{ github.event.inputs.tag }}.zip" jpegcompress
 
-      - name: Create Release
+      - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: "v${{ steps.calc.outputs.next }}"
-          release_name: "HolyCompress ${{ steps.calc.outputs.next }}"
-          draft: false
-          prerelease: false
-
-      - name: Upload ZIP asset
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: "v${{ steps.calc.outputs.next }}"
-          files: dist/jpegcompress-${{ steps.calc.outputs.next }}.zip
+          tag_name: ${{ github.event.inputs.tag }}
+          release_name: ${{ github.event.inputs.name }}
+          files: dist/jpegcompress-${{ github.event.inputs.tag }}.zip
