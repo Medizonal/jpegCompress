@@ -1,4 +1,4 @@
-name: Python Test Suite
+name: vibe check
 
 on:
   pull_request:
@@ -12,23 +12,18 @@ jobs:
       - name: Check out repository code
         uses: actions/checkout@v4
 
-      - name: Set up Python
+      - name: Set da Python shit
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
           cache: 'pip'
           cache-dependency-path: '**/requirements.txt'
 
-      - name: Install Qt system dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libegl1-mesa libgl1-mesa-glx libxkbcommon-x11-0
-
-      - name: Install Python dependencies
+      - name: Install deez Python dependencies nuts 
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests
+      - name: Run dem tests
         working-directory: ./app
         run: pytest
