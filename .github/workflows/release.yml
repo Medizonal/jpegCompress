@@ -40,5 +40,5 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.tag }}
-          release_name: ${{ github.event.inputs.name }}
+          name: ${{ github.event.inputs.name }}
           files: dist/jpegcompress-${{ github.event.inputs.tag }}.zip
