@@ -1,7 +1,7 @@
 import PyInstaller.__main__
 
 PyInstaller.__main__.run([
-    'app/main.py',
+    'app/divine_orchestrator.py',
     '--onedir',
     '--noconsole',
     '--name=holycompress',

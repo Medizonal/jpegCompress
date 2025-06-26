@@ -11,7 +11,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtGui import QFont, QIcon
 
 # Import the worker and helper classes from our other file
-from compressor_worker import CompressorWorker, ImageStats, ProcessResult
+from sacred_text_condenser import SacredImageCondenserAcolyte, HolyImageOmens, TransmutationOutcome
 
 # ==============================================================================
 # SCRIPT CONFIGURATION DEFAULTS
@@ -30,17 +30,17 @@ CONFIG_DEFAULTS: Dict[str, Any] = {
     "save_on_target_failure": True,
 }
 
-class ImageCompressorApp(QMainWindow):
+class DivineImageSanctifierChapel(QMainWindow):
     """The ABSOLUTE HOLY Main Window."""
 
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Advanced Image Compressor")
+        self.setWindowTitle("Divine Image Sanctifier Chapel")
         self.setGeometry(100, 100, 900, 700)
 
         # Worker thread management
         self.thread: QThread | None = None
-        self.worker: CompressorWorker | None = None
+        self.worker_acolyte: SacredImageCondenserAcolyte | None = None
 
         # Main widget and layout
         self.central_widget = QWidget()
@@ -57,9 +57,9 @@ class ImageCompressorApp(QMainWindow):
         # Create status bar
         self.status_bar = QStatusBar()
         self.setStatusBar(self.status_bar)
-        self.status_bar.showMessage("Idle. Ready to start.")
+        self.status_bar.showMessage("Chapel Idle. Awaiting Divine Command.")
         #Test log panel
-        self.log_edit.append("Logger Running...")
+        self.log_edit.append("Sacred Scribe Commencing...")
         
     def _create_settings_panel(self):
         """Creates the left panel with all configuration options."""
@@ -72,7 +72,7 @@ class ImageCompressorApp(QMainWindow):
         self._create_concurrency_group()
         
         # --- Start/Stop Button ---
-        self.start_button = QPushButton("🚀 Start Compression")
+        self.start_button = QPushButton("✨ Commence Holy Condensation ✨")
         self.start_button.setFixedHeight(40)
         font = self.start_button.font()
         font.setPointSize(12)
@@ -92,39 +92,39 @@ class ImageCompressorApp(QMainWindow):
         ]
 
     def _create_io_group(self):
-        self.io_group = QGroupBox("Input / Output")
+        self.io_group = QGroupBox("Sacred Offerings & Altar")
         layout = QFormLayout()
 
         # Input folder
-        self.input_folder_edit = QLineEdit(CONFIG_DEFAULTS['input_folder'])
+        self.offering_scroll_path_input = QLineEdit(CONFIG_DEFAULTS['input_folder'])
         input_btn = QPushButton("Browse...")
         input_btn.clicked.connect(self._select_input_folder)
         input_layout = QHBoxLayout()
-        input_layout.addWidget(self.input_folder_edit)
+        input_layout.addWidget(self.offering_scroll_path_input)
         input_layout.addWidget(input_btn)
-        layout.addRow("Input Folder:", input_layout)
+        layout.addRow("Offering Scroll Path:", input_layout)
 
         # Output folder
-        self.output_folder_edit = QLineEdit(CONFIG_DEFAULTS['output_folder'])
+        self.sanctified_altar_path_input = QLineEdit(CONFIG_DEFAULTS['output_folder'])
         output_btn = QPushButton("Browse...")
         output_btn.clicked.connect(self._select_output_folder)
         output_layout = QHBoxLayout()
-        output_layout.addWidget(self.output_folder_edit)
+        output_layout.addWidget(self.sanctified_altar_path_input)
         output_layout.addWidget(output_btn)
-        layout.addRow("Output Folder:", output_layout)
+        layout.addRow("Sanctified Altar Path:", output_layout)
 
         self.io_group.setLayout(layout)
 
     def _create_strategy_group(self):
-        self.strategy_group = QGroupBox("Compression Strategy & Quality")
+        self.strategy_group = QGroupBox("Condensation Rite & Focus")
         main_layout = QVBoxLayout()
         
         # Radio buttons for strategy selection
-        self.target_size_radio = QRadioButton("Target Size (Iterative)")
+        self.target_size_radio = QRadioButton("Divine Weight Limit (Iterative Chant)")
         self.target_size_radio.setChecked(CONFIG_DEFAULTS['target_size_mode'])
         self.target_size_radio.toggled.connect(self._update_strategy_widgets)
         
-        self.relative_quality_radio = QRadioButton("Relative Quality (Size-based)")
+        self.relative_quality_radio = QRadioButton("Relative Sanctity (Scroll-based Focus)")
         self.relative_quality_radio.setChecked(not CONFIG_DEFAULTS['target_size_mode'])
         
         radio_layout = QHBoxLayout()
@@ -133,13 +133,13 @@ class ImageCompressorApp(QMainWindow):
         main_layout.addLayout(radio_layout)
 
         # --- Target Size Settings ---
-        self.target_size_group = QGroupBox("Target Size Settings")
+        self.target_size_group = QGroupBox("Divine Weight Settings")
         ts_layout = QFormLayout()
-        self.target_size_spinbox = QSpinBox()
-        self.target_size_spinbox.setRange(10, 5000)
-        self.target_size_spinbox.setValue(CONFIG_DEFAULTS['target_size_kb'])
-        self.target_size_spinbox.setSuffix(" KB")
-        ts_layout.addRow("Target Size:", self.target_size_spinbox)
+        self.divine_target_weight_selector = QSpinBox()
+        self.divine_target_weight_selector.setRange(10, 5000)
+        self.divine_target_weight_selector.setValue(CONFIG_DEFAULTS['target_size_kb'])
+        self.divine_target_weight_selector.setSuffix(" KB")
+        ts_layout.addRow("Divine Target Weight:", self.divine_target_weight_selector)
         self.save_on_failure_checkbox = QCheckBox("Save best attempt if target is missed")
         self.save_on_failure_checkbox.setChecked(CONFIG_DEFAULTS['save_on_target_failure'])
         ts_layout.addRow(self.save_on_failure_checkbox)
@@ -147,26 +147,26 @@ class ImageCompressorApp(QMainWindow):
         main_layout.addWidget(self.target_size_group)
 
         # --- Relative Quality Settings ---
-        self.relative_quality_group = QGroupBox("Relative Quality Settings")
+        self.relative_quality_group = QGroupBox("Relative Sanctity Settings")
         rq_layout = QFormLayout()
-        self.base_quality_spinbox = QSpinBox()
-        self.base_quality_spinbox.setRange(1, 100)
-        self.base_quality_spinbox.setValue(CONFIG_DEFAULTS['base_quality'])
-        rq_layout.addRow("Base Quality (for avg size):", self.base_quality_spinbox)
+        self.base_focus_selector = QSpinBox()
+        self.base_focus_selector.setRange(1, 100)
+        self.base_focus_selector.setValue(CONFIG_DEFAULTS['base_quality'])
+        rq_layout.addRow("Base Focus (for avg scroll):", self.base_focus_selector)
         self.relative_quality_group.setLayout(rq_layout)
         main_layout.addWidget(self.relative_quality_group)
 
         # --- General Quality Settings ---
-        general_quality_group = QGroupBox("General Quality Limits")
+        general_quality_group = QGroupBox("General Focus Limits")
         gq_layout = QFormLayout()
-        self.min_quality_spinbox = QSpinBox()
-        self.min_quality_spinbox.setRange(1, 100)
-        self.min_quality_spinbox.setValue(CONFIG_DEFAULTS['min_quality'])
-        gq_layout.addRow("Minimum Quality:", self.min_quality_spinbox)
-        self.max_quality_spinbox = QSpinBox()
-        self.max_quality_spinbox.setRange(1, 100)
-        self.max_quality_spinbox.setValue(CONFIG_DEFAULTS['max_quality'])
-        gq_layout.addRow("Maximum Quality:", self.max_quality_spinbox)
+        self.min_focus_selector = QSpinBox()
+        self.min_focus_selector.setRange(1, 100)
+        self.min_focus_selector.setValue(CONFIG_DEFAULTS['min_quality'])
+        gq_layout.addRow("Minimum Focus:", self.min_focus_selector)
+        self.max_focus_selector = QSpinBox()
+        self.max_focus_selector.setRange(1, 100)
+        self.max_focus_selector.setValue(CONFIG_DEFAULTS['max_quality'])
+        gq_layout.addRow("Maximum Focus:", self.max_focus_selector)
         general_quality_group.setLayout(gq_layout)
         main_layout.addWidget(general_quality_group)
         
@@ -174,12 +174,12 @@ class ImageCompressorApp(QMainWindow):
         self._update_strategy_widgets() # Initial setup
 
     def _create_concurrency_group(self):
-        self.concurrency_group = QGroupBox("Concurrency")
+        self.concurrency_group = QGroupBox("Acolyte Conclave")
         layout = QFormLayout()
-        self.worker_spinbox = QSpinBox()
-        self.worker_spinbox.setRange(1, os.cpu_count() * 2)
-        self.worker_spinbox.setValue(CONFIG_DEFAULTS['worker_count'])
-        layout.addRow("Worker Processes:", self.worker_spinbox)
+        self.acolyte_count_selector = QSpinBox()
+        self.acolyte_count_selector.setRange(1, os.cpu_count() * 2)
+        self.acolyte_count_selector.setValue(CONFIG_DEFAULTS['worker_count'])
+        layout.addRow("Acolyte Count:", self.acolyte_count_selector)
         self.concurrency_group.setLayout(layout)
 
     def _create_output_panel(self):
@@ -198,20 +198,20 @@ class ImageCompressorApp(QMainWindow):
         
         self.output_layout.addWidget(QLabel("Progress :"))
         self.output_layout.addWidget(self.progress_bar)
-        self.output_layout.addWidget(QLabel("Holy Logger:"))
+        self.output_layout.addWidget(QLabel("Sacred Scribe's Log:"))
         self.output_layout.addWidget(self.log_edit, stretch=1)
     
     @Slot()
     def _select_input_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Input Folder")
         if folder:
-            self.input_folder_edit.setText(folder)
+            self.offering_scroll_path_input.setText(folder)
 
     @Slot()
     def _select_output_folder(self):
         folder = QFileDialog.getExistingDirectory(self, "Select Output Folder")
         if folder:
-            self.output_folder_edit.setText(folder)
+            self.sanctified_altar_path_input.setText(folder)
 
     @Slot()
     def _update_strategy_widgets(self):
@@ -228,39 +228,39 @@ class ImageCompressorApp(QMainWindow):
 
     def start_compression(self):
         """Gathers config, creates worker/thread, and starts the process."""
-        config = self.get_config_from_ui()
+        sacred_directives_for_acolyte = self.get_config_from_ui()
         
-        if not os.path.isdir(config['input_folder']):
-            QMessageBox.critical(self, "Error", f"Input folder not found:\n{config['input_folder']}")
+        if not os.path.isdir(sacred_directives_for_acolyte['input_folder']):
+            QMessageBox.critical(self, "Error", f"Input folder not found:\n{sacred_directives_for_acolyte['input_folder']}")
             return
         
-        os.makedirs(config['output_folder'], exist_ok=True)
+        os.makedirs(sacred_directives_for_acolyte['output_folder'], exist_ok=True)
 
         # UI changes for running state
         self.set_controls_enabled(False)
-        self.start_button.setText("🛑 Stop Compression")
+        self.start_button.setText("✋ Halt Sacred Rite ✋")
         self.log_edit.clear()
         self.progress_bar.setValue(0)
-        self.status_bar.showMessage("Starting...")
+        self.status_bar.showMessage("Commencing Sacred Rite...")
 
         # Create and start the thread
         self.thread = QThread()
-        self.worker = CompressorWorker(config)
-        self.worker.moveToThread(self.thread)
+        self.worker_acolyte = SacredImageCondenserAcolyte(sacred_directives_for_acolyte)
+        self.worker_acolyte.moveToThread(self.thread)
 
         # Connect signals from worker to slots in GUI
-        self.thread.started.connect(self.worker.run)
-        self.worker.finished.connect(self.on_compression_finished)
-        self.worker.error.connect(self.on_compression_error)
-        self.worker.log_message.connect(self.log_edit.append)
-        self.worker.progress_updated.connect(self.update_progress)
+        self.thread.started.connect(self.worker_acolyte.perform_sacred_image_condensation_ritual)
+        self.worker_acolyte.finished.connect(self.on_compression_finished)
+        self.worker_acolyte.error.connect(self.on_compression_error)
+        self.worker_acolyte.log_message.connect(self.log_edit.append)
+        self.worker_acolyte.progress_updated.connect(self.update_progress)
         
         self.thread.start()
 
     def stop_compression(self):
-        self.status_bar.showMessage("Stopping...")
-        if self.worker:
-            self.worker.stop() # Tell worker to stop gracefully
+        self.status_bar.showMessage("Halting Sacred Rite...")
+        if self.worker_acolyte:
+            self.worker_acolyte.stop() # Tell worker to stop gracefully
         if self.thread:
             self.thread.quit()
             self.thread.wait(5000) # Wait up to 5s for thread to finish
@@ -269,9 +269,9 @@ class ImageCompressorApp(QMainWindow):
     @Slot()
     def on_compression_finished(self):
         """Cleans up after the thread is done."""
-        self.status_bar.showMessage("Finished. Ready for new task.", 5000)
+        self.status_bar.showMessage("Rite Complete. Chapel Ready.", 5000)
         self.set_controls_enabled(True)
-        self.start_button.setText("🚀 Start Compression")
+        self.start_button.setText("✨ Commence Holy Condensation ✨")
         
         # Clean up thread and worker to prevent issues on restart
         if self.thread:
@@ -279,7 +279,7 @@ class ImageCompressorApp(QMainWindow):
                 self.thread.quit()
                 self.thread.wait()
             self.thread = None
-        self.worker = None
+        self.worker_acolyte = None
 
     @Slot(str)
     def on_compression_error(self, message: str):
@@ -291,20 +291,20 @@ class ImageCompressorApp(QMainWindow):
         if self.progress_bar.maximum() != maximum:
             self.progress_bar.setMaximum(maximum)
         self.progress_bar.setValue(value)
-        self.status_bar.showMessage(f"Processing image {value} of {maximum}...")
+        self.status_bar.showMessage(f"Transmuting sacred image {value} of {maximum}...")
 
     def get_config_from_ui(self) -> Dict[str, Any]:
         """Reads all values from the UI widgets and returns a config dict."""
         return {
-            "input_folder": self.input_folder_edit.text(),
-            "output_folder": self.output_folder_edit.text(),
+            "input_folder": self.offering_scroll_path_input.text(),
+            "output_folder": self.sanctified_altar_path_input.text(),
             "supported_extensions": CONFIG_DEFAULTS['supported_extensions'],
-            "worker_count": self.worker_spinbox.value(),
+            "worker_count": self.acolyte_count_selector.value(),
             "target_size_mode": self.target_size_radio.isChecked(),
-            "min_quality": self.min_quality_spinbox.value(),
-            "max_quality": self.max_quality_spinbox.value(),
-            "base_quality": self.base_quality_spinbox.value(),
-            "target_size_kb": self.target_size_spinbox.value(),
+            "min_quality": self.min_focus_selector.value(),
+            "max_quality": self.max_focus_selector.value(),
+            "base_quality": self.base_focus_selector.value(),
+            "target_size_kb": self.divine_target_weight_selector.value(),
             "save_on_target_failure": self.save_on_failure_checkbox.isChecked()
         }
 
@@ -325,6 +325,6 @@ if __name__ == "__main__":
         os.makedirs(CONFIG_DEFAULTS['input_folder'])
         
     app = QApplication(sys.argv)
-    window = ImageCompressorApp()
-    window.show()
+    holy_chapel_interface = DivineImageSanctifierChapel()
+    holy_chapel_interface.show()
     sys.exit(app.exec())
